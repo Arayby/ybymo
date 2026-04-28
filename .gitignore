@@ -1,0 +1,145 @@
+############################
+# SISTEMA OPERACIONAL
+############################
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Linux / Unix
+*~
+
+############################
+# IDEs / EDITORES
+############################
+
+# IntelliJ / JetBrains
+.idea/
+*.iml
+out/
+
+# VS Code
+.vscode/
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+############################
+# JAVA / JVM
+############################
+*.class
+*.log
+hs_err_pid*
+replay_pid*
+
+############################
+# GRADLE
+############################
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+############################
+# MULTI-MÓDULO (core/cli/api)
+############################
+core/build/
+cli/build/
+api/build/
+
+############################
+# FRONTEND (NODE / TS)
+############################
+node_modules/
+dist/
+.next/
+.nuxt/
+.svelte-kit/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Coverage
+coverage/
+*.lcov
+
+# Package managers
+pnpm-lock.yaml
+
+############################
+# GRAALVM / NATIVE IMAGE
+############################
+*.exe
+*.dll
+*.so
+*.dylib
+native/
+native-image/
+*.native
+
+############################
+# DISTRIBUIÇÃO
+############################
+bin/
+release/
+
+############################
+# CONFIG LOCAL / SEGURANÇA
+############################
+.env
+.env.*
+*.local
+
+# Certificados / chaves
+*.key
+*.pem
+*.p12
+*.jks
+*.keystore
+
+############################
+# SSH / GPG
+############################
+*.gpg
+*.asc
+
+############################
+# LOGS / TEMP
+############################
+logs/
+tmp/
+*.tmp
+
+############################
+# CACHE
+############################
+.cache/
+
+############################
+# DOCKER
+############################
+docker-compose.override.yml
+
+############################
+# CI LOCAL (ACT)
+############################
+.act/
+
+############################
+# BACKUP / EDITORES
+############################
+*.bak
+*.swp
+*.swo
+
+############################
+# DOCUMENTAÇÃO GERADA
+############################
+docs/build/

@@ -1,0 +1,4 @@
+rootProject.name = 'ybymo'
+
+include 'ybymo-core'
+include 'ybymo-cli'
