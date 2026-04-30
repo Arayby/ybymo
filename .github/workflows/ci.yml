@@ -37,6 +37,9 @@ jobs:
       - name: Gradlew Permissions
         run: chmod +x ./gradlew
 
+      - name: Validate CHANGELOG
+        run: ./gradlew validateChangelog
+
       - name: Run Tests
         run: ./gradlew test
 
