@@ -1,11 +1,14 @@
 package com.arayby.ybymo.cli;
 
+import com.arayby.ybymo.cli.command.CsvCommand;
 import picocli.CommandLine;
+import picocli.CommandLine.Command;
 
-@CommandLine.Command(name = "ybymo",
-                     mixinStandardHelpOptions = true,
-                     version = "1.0-SNAPSHOT",
-                     description = "Extração, conversão e transformação de dados.")
+@Command(name = "ybymo",
+         mixinStandardHelpOptions = true,
+         version = "0.1.0",
+         description = "Ybymo — extração, conversão e transformação de dados.",
+         subcommands = {CsvCommand.class})
 public class Main implements Runnable {
 
     static void main(String[] args) {
@@ -14,6 +17,6 @@ public class Main implements Runnable {
 
     @Override
     public void run() {
-        CommandLine.usage(this, System.out);
+        new CommandLine(this).usage(System.out);
     }
 }
