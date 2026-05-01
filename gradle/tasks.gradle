@@ -1,0 +1,179 @@
+def validateChangelog = tasks.register('validateChangelog')
+def validateVersionSync = tasks.register('validateVersionSync')
+def extractVersion = tasks.register('extractVersion')
+def extractReleaseNotes = tasks.register('extractReleaseNotes')
+
+validateChangelog.configure {
+    doLast {
+        def changelogFile = rootProject.file('CHANGELOG.md')
+
+        if (!changelogFile.exists()) {
+            throw new GradleException('❌ CHANGELOG.md não encontrado na raiz do projeto')
+        }
+
+        def changelogContent = changelogFile.text
+
+        if (!changelogContent.contains('[Planejado]')) {
+            throw new GradleException('❌ CHANGELOG.md precisa conter a seção [Planejado]')
+        }
+
+        def unreleaseStart = changelogContent.indexOf('[Planejado]')
+        def nextVersionStart = changelogContent.indexOf('## [', unreleaseStart + 1)
+
+        if (nextVersionStart == -1) {
+            nextVersionStart = changelogContent.length()
+        }
+
+        def unreleaseSection = changelogContent.substring(unreleaseStart, nextVersionStart)
+
+        def hasEntries = unreleaseSection.contains('\n- ')
+
+        if (!hasEntries) {
+            throw new GradleException('❌ CHANGELOG.md seção [Planejado] precisa conter pelo menos uma entrada de mudança')
+        }
+
+        logger.quiet('✅ CHANGELOG.md validado com sucesso')
+    }
+}
+
+validateVersionSync.configure {
+    doLast {
+        def changelogFile = rootProject.file('CHANGELOG.md')
+        def buildFile = rootProject.file('build.gradle')
+
+        if (!changelogFile.exists()) {
+            throw new GradleException('❌ CHANGELOG.md não encontrado')
+        }
+
+        if (!buildFile.exists()) {
+            throw new GradleException('❌ build.gradle não encontrado')
+        }
+
+        def changelogContent = changelogFile.text
+        def buildContent = buildFile.text
+
+        def changelogPattern = /^## \[(\d+\.\d+\.\d+)\]/
+        def changelogVersion = null
+
+        for (String line : changelogContent.split('\n')) {
+            def matcher = line =~ changelogPattern
+            if (matcher.find()) {
+                changelogVersion = matcher.group(1)
+                break
+            }
+        }
+
+        def buildPattern = /version\s*=\s*['"]([^'"]+)['"]/
+        def buildVersion = null
+        def matcher = buildContent =~ buildPattern
+        if (matcher.find()) {
+            buildVersion = matcher.group(1)
+        }
+
+        if (changelogVersion) {
+            if (buildVersion && !buildVersion.endsWith('-SNAPSHOT')) {
+                throw new GradleException("""❌ SINCRONIZAÇÃO INVÁLIDA:
+   CHANGELOG: [${changelogVersion}] (preparado para release)
+   build.gradle: ${buildVersion} (deveria ser ${changelogVersion}-SNAPSHOT)
+   
+   ℹ️  Mantenha build.gradle em SNAPSHOT até o workflow criar a tag.""")
+            }
+
+            logger.quiet("✅ Release sincronizado: CHANGELOG=[${changelogVersion}], build.gradle=${buildVersion}")
+            return
+        }
+
+        logger.quiet('✅ Versionamento sincronizado')
+    }
+}
+
+extractVersion.configure {
+    def versionFile = file("${layout.buildDirectory.get()}/version.txt")
+    outputs.file(versionFile)
+
+    doLast {
+        def changelogFile = rootProject.file('CHANGELOG.md')
+
+        if (!changelogFile.exists()) {
+            throw new GradleException('❌ CHANGELOG.md não encontrado na raiz do projeto')
+        }
+
+        def changelogContent = changelogFile.text
+        def pattern = /^## \[(\d+\.\d+\.\d+)\]/
+        def version = null
+
+        for (String line : changelogContent.split('\n')) {
+            if (version == null) {
+                def matcher = line =~ pattern
+                if (matcher.find()) {
+                    version = matcher.group(1)
+                    break
+                }
+            }
+        }
+
+        if (version == null) {
+            throw new GradleException('❌ Nenhuma versão válida encontrada no CHANGELOG.md. Formato esperado: ## [X.Y.Z]')
+        }
+
+        logger.quiet("✅ Versão extraída do CHANGELOG: $version")
+
+        versionFile.parentFile.mkdirs()
+        versionFile.text = version
+
+        println(version)
+    }
+}
+
+extractReleaseNotes.configure {
+    def notesFile = file("${layout.buildDirectory.get()}/release-notes.txt")
+    outputs.file(notesFile)
+
+    doLast {
+        def changelogFile = rootProject.file('CHANGELOG.md')
+
+        if (!changelogFile.exists()) {
+            throw new GradleException('❌ CHANGELOG.md não encontrado na raiz do projeto')
+        }
+
+        def changelogContent = changelogFile.text
+        def lines = changelogContent.split('\n')
+
+        def releaseNotes = new StringBuilder()
+        def captureNotes = false
+        def sectionCount = 0
+
+        for (String line : lines) {
+            if (line =~ /^## \[\d+\.\d+\.\d+]/) {
+                if (sectionCount == 0) {
+                    captureNotes = true
+                    sectionCount++
+                    continue
+                } else {
+                    break
+                }
+            }
+
+            if (captureNotes && (line == '---' || line =~ /^## \[/)) {
+                break
+            }
+
+            if (captureNotes && line.trim()) {
+                releaseNotes.append(line).append('\n')
+            } else if (captureNotes && !line.trim()) {
+                releaseNotes.append('\n')
+            }
+        }
+
+        if (releaseNotes.length() == 0) {
+            throw new GradleException('❌ Nenhuma nota de release encontrada no CHANGELOG.md')
+        }
+
+        logger.quiet('✅ Notas de release extraídas com sucesso')
+
+        notesFile.parentFile.mkdirs()
+        notesFile.text = releaseNotes.toString().trim()
+
+        println(releaseNotes.toString().trim())
+    }
+}

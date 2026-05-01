@@ -1,225 +1,88 @@
-# Contribuindo para o Ybymo
+# Guia de Contribuição do Ybymo
 
-Obrigado por considerar contribuir para o Ybymo! Este documento fornece orientações e instruções para tornar o processo de contribuição claro e eficiente.
+Este guia foi criado para tornar o processo de contribuição o mais claro e simples possível.
 
-## Código de Conduta
+## Como Você Pode Ajudar
 
-Esperamos que todos os contribuidores sigam um padrão de comportamento respeitoso e inclusivo. Qualquer violação será tratada com seriedade.
+-   🐛 **Reportar Bugs**: Abra uma [Issue](https://github.com/arayby/ybymo/issues) detalhando o problema.
+-   💡 **Sugerir Melhorias**: Inicie uma discussão em [Discussions](https://github.com/arayby/ybymo/discussions).
+-   📄 **Melhorar a Documentação**: Envie um Pull Request com suas sugestões.
+-   💻 **Escrever Código**: Implemente novas funcionalidades ou corrija bugs.
 
-## Como Contribuir
+## Seu Primeiro Commit em 5 Passos
 
-### 1. Prepare seu Ambiente
+Quer fazer sua primeira contribuição? Siga estes passos:
 
-**Requisitos:**
-- GraalVM 25 (`java=25.0.3-graal`)
-- [SDKMAN!](https://sdkman.io) (opcional, recomendado)
+1.  **Crie uma branch**: `git checkout -b fix/corrige-erro-leia-me`
+2.  **Faça sua mudança**: Corrija um erro de digitação ou melhore uma frase na documentação.
+3.  **Atualize o CHANGELOG**: Adicione `- Correção de erro de digitação no README.md` na seção `[Planejado]` do `CHANGELOG.md`.
+4.  **Faça o commit**: `git commit -m "docs: corrige erro de digitação no README"`
+5.  **Abra um Pull Request** e aguarde a revisão!
 
-**Instalação:**
+## Fluxo de Desenvolvimento Detalhado
+
+### 1. Configuração do Ambiente
+
+-   **Requisito**: GraalVM para Java 25.
+-   **Recomendação**: Use SDKMAN!.
+
+Com o SDKMAN! instalado, basta rodar o comando abaixo na raiz do projeto:
 ```bash
-# Com SDKMAN!
 sdk env install
-
-# Sem SDKMAN! - instale GraalVM 25 manualmente
 ```
+Ele instalará e configurará a versão correta do Java automaticamente.
 
-**Validação:**
-```bash
-java -version
-# Deve exibir: GraalVM 25.x.x
-```
+### 2. Ciclo de Desenvolvimento
 
-### 2. Fork e Clone
+1.  **Crie uma branch**: Use um nome descritivo seguindo o padrão:
+    -   `feat/nome-da-funcionalidade`
+    -   `fix/descricao-do-problema`
+    -   `docs/melhora-documentacao-x`
 
-```bash
-git clone git@github.com:Arayby/ybymo.git
-cd ybymo
-```
+2.  **Implemente e teste**:
+    -   Escreva o código da sua funcionalidade ou correção.
+    -   **Adicione testes unitários** para validar seu código. A cobertura de testes é fundamental.
+    -   Rode os testes localmente: `./gradlew test`.
 
-### 3. Crie uma Branch
+3.  **Atualize o CHANGELOG.md**:
+    -   Este passo é **obrigatório**. Builds e Pull Requests falharão se o `CHANGELOG.md` não for modificado.
+    -   Adicione uma nova entrada na seção `[Planejado]`.
+    -   Use uma das categorias indicadas no `CHANGELOG.md`.
 
-Use nomes descritivos para branches:
+    **Exemplo:**
+    ```markdown
+    ### [Planejado]
 
-```bash
-git checkout -b feat/new-feature-name
-git checkout -b fix/bug-description
-git checkout -b docs/update-readme
-```
+    #### Adicionado
+    - Nova funcionalidade de exportação para JSON.
+    ```
 
-### 4. Desenvolva e Teste
+4.  **Faça o commit**:
+    -   Use o padrão Conventional Commits.
+    -   **Exemplos**:
+        -   `feat(extractor): adiciona extrator de JSON`
+        -   `fix(cli): corrige parsing de argumentos`
+        -   `docs(readme): melhora exemplos de uso`
 
-```bash
-# Executar testes
-./gradlew test
+5.  **Valide tudo localmente**:
+    -   Antes de enviar, rode a build do projeto. Ele executa testes e valida o CHANGELOG.
+    -   `./gradlew build`
 
-# Compilar projeto
-./gradlew build
+6.  **Envie o Pull Request**:
+    -   Faça o push da sua branch para o GitHub e abra um Pull Request para a branch `main`.
+    -   Preencha o Pull Request com uma descrição clara de suas mudanças.
 
-# Gerar binário nativo (opcional)
-./gradlew :ybymo-cli:nativeCompile
-```
+### 3. Processo de Release
 
-### 5. Atualize o CHANGELOG.md
+O processo de release é automatizado:
 
-Edite o arquivo `CHANGELOG.md` na seção `[Planejado]` e adicione suas mudanças na categoria apropriada:
+1.  **Crie uma release branch**: `release/vX.Y.Z`.
+2.  **Atualize o CHANGELOG**: Mova o conteúdo de `[Planejado]` para uma nova versão, ex: `[1.1.0] - DD/MM/YYYY`.
+3.  **Sincronize a versão**: Rode `./gradlew validateVersionSync` para garantir que a versão do `build.gradle` e `CHANGELOG.md` estão alinhadas.
+4.  **Abra um Pull Request**: Envie o Pull Request da release branch para a `main`.
+5.  **Merge**: Após a aprovação e merge, o GitHub Actions irá:
+    -   Criar uma tag Git (`vX.Y.Z`).
+    -   Gerar os artefatos da release.
+    -   Publicar a nova versão no GitHub Releases.
 
-#### Categorias do CHANGELOG
-
-- **Adicionado**: Novas funcionalidades ou extractors/transformers
-- **Alterado**: Alterações em funcionalidades existentes, mudanças de API
-- **Corrigido**: Correções de bugs
-- **Descontinuado**: Funcionalidades marcadas para remoção futura
-- **Removido**: Remoção de funcionalidades/módulos
-- **Segurança**: Patches de segurança e melhorias
-
-#### Exemplo de Entrada
-
-```markdown
-## [Planejado]
-
-### Adicionado
-- Novo `JsonExtractor` para leitura de arquivos JSON
-- Suporte para custom encoding em `CsvExtractor`
-
-### Corrigido
-- Bug: `PrefixTransformer` lançava `NullPointerException` com valores null
-
-### Alterado
-- Performance do `CleanTransformer` melhorada em 25%
-```
-
-**Importante**: Se o `[Planejado]` estiver vazio e você submeter um PR, a build **falhará**. Isto é intencional para garantir que toda contribuição seja documentada.
-
-### 6. Commit com Padrão Conventional Commits
-
-Mantenha mensagens de commit estruturadas para facilitar o versionamento semântico:
-
-```bash
-git commit -m "feat(csv-extractor): add custom encoding support"
-git commit -m "fix(pipeline): prevent memory leak in stream processing"
-git commit -m "docs(changelog): update version 1.1.0"
-git commit -m "test(data-record): add edge case tests"
-```
-
-**Formato**: `type(scope): description`
-
-**Tipos Comuns:**
-- `feat`: Uma nova funcionalidade
-- `fix`: Uma correção de bug
-- `docs`: Alteração apenas em documentação
-- `test`: Adição ou alteração de testes
-- `refactor`: Refatoração sem mudança de funcionalidade
-- `perf`: Melhoria de performance
-- `chore`: Alterações de build, dependencies, etc
-
-### 7. Push e Abra um Pull Request
-
-```bash
-git push origin feat/new-feature-name
-```
-
-No GitHub, abra um Pull Request descrevendo:
-- O que foi alterado
-- Por que foi alterado
-- Como testar as alterações
-
-**O PR será rejeitado se:**
-- Testes não passarem
-- CHANGELOG.md não foi atualizado
-- Cobertura de testes for insuficiente
-
-## Padrões de Código
-
-### Testes
-
-Seguimos o padrão AAA (Arrange-Act-Assert) com JUnit 5 e AssertJ:
-
-```java
-@Test
-void methodName_scenario_expectedResult() {
-    // Arrange
-    int value = 10;
-    MyClass instance = new MyClass();
-    
-    // Act
-    int result = instance.calculate(value);
-    
-    // Assert
-    assertThat(result).isEqualTo(20);
-}
-```
-
-**Cobertura Esperada:**
-- Casos de sucesso
-- Valores nulos, vazios, limites)
-- Exceções esperadas
-
-### Estilo de Código
-
-- Encoding: UTF-8
-- Indentação: 4 espaços
-- Java Version: 25 (com preview features habilitadas)
-
-## Estrutura do Projeto
-
-```
-ybymo/
-├── ybymo-core/          # Lógica de core (extractors, transformers, pipeline)
-├── ybymo-cli/           # Interface de linha de comando
-├── CHANGELOG.md         # Histórico de mudanças
-└── CONTRIBUTING.md      # Este guia
-```
-
-## Adicionando Novos Módulos/Features
-
-Se estiver adicionando um novo extrator ou transformador:
-
-1. Implemente em `ybymo-core`
-2. Crie testes abrangentes (100% cobertura)
-3. Exponha na CLI em `ybymo-cli` se relevante
-4. Atualize `CHANGELOG.md` na seção `[Planejado]` → `Adicionado`
-
-## Validação Local
-
-Antes de fazer push, valide localmente:
-
-```bash
-# Executar todos os testes
-./gradlew test
-
-# Validar CHANGELOG (isso é feito automaticamente no CI)
-# Apenas certifique-se que [Planejado] tem conteúdo relacionado às mudanças
-
-# Build completo
-./gradlew build
-```
-
-## CI/CD
-
-Todo PR é automaticamente validado:
-
-1. **Testes**: Suite completa de testes com JUnit 5
-2. **CHANGELOG**: Validação obrigatória de atualização
-3. **Build**: Compilação e geração de artefatos
-
-Se alguma etapa falhar, o PR será bloqueado. Corrija os problemas e faça push novamente.
-
-## Versioning e Releases
-
-O projeto usa **Semantic Versioning (SemVer)**:
-- `MAJOR.MINOR.PATCH` (ex: `1.0.0`, `1.1.0`, `2.0.0`)
-
-**Como Funciona:**
-- Tags Git com padrão `v*` disparam o workflow de release
-- Release notes são geradas automaticamente do CHANGELOG.md
-- Binários nativos para Linux, macOS e Windows são publicados
-
-## Perguntas?
-
-- Abra uma issue para discussão
-- Verifique issues existentes antes de criar uma nova
-- Para sugestões maiores, discuta em uma issue antes de desenvolver
-
----
-
-**Obrigado por contribuir para o Ybymo!** 🎉
-
+Este fluxo garante que cada versão seja bem documentada e o processo, consistente.

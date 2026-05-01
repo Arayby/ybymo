@@ -9,9 +9,11 @@ jobs:
   test:
     name: Test Suite
     runs-on: ubuntu-latest
+    environment: production
     permissions:
       checks: write
       pull-requests: write
+      contents: read
 
     steps:
       - name: Repository Checkout
@@ -50,22 +52,26 @@ jobs:
   build:
     name: Build ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    environment: production
     needs: test
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
-            artifact: ybymo-linux
+            artifact: ybymo-linux-amd64.tar.gz
             binary: ybymo-cli/build/native/nativeCompile/ybymo
+            bin_name: ybymo
 
           - os: macos-latest
-            artifact: ybymo-macos
+            artifact: ybymo-macos-arm64.tar.gz
             binary: ybymo-cli/build/native/nativeCompile/ybymo
+            bin_name: ybymo
 
           - os: windows-latest
-            artifact: ybymo-windows.exe
+            artifact: ybymo-windows-amd64.zip
             binary: ybymo-cli/build/native/nativeCompile/ybymo.exe
+            bin_name: ybymo.exe
 
     steps:
       - name: Repository Checkout
@@ -96,12 +102,39 @@ jobs:
 
       - name: Prepare Artifact
         shell: bash
-        run: cp ${{ matrix.binary }} ${{ matrix.artifact }}
+        run: |
+          cp ${{ matrix.binary }} ${{ matrix.bin_name }}
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            7z a ${{ matrix.artifact }} ${{ matrix.bin_name }}
+          else
+            tar -czf ${{ matrix.artifact }} ${{ matrix.bin_name }}
+          fi
+
+      - name: Extract Notes
+        if: matrix.os == 'ubuntu-latest'
+        id: release_notes
+        run: ./gradlew -q extractReleaseNotes 2>&1 | tail -1 > release-notes.txt
+
+      - name: Read Notes
+        if: matrix.os == 'ubuntu-latest'
+        id: notes
+        run: echo "body=$(cat release-notes.txt | jq -Rs .)" >> $GITHUB_OUTPUT
 
       - name: Release Artifact
+        if: matrix.os == 'ubuntu-latest' || github.event.inputs.skip_matrix == 'true'
         uses: softprops/action-gh-release@v2
         with:
           files: ${{ matrix.artifact }}
-          generate_release_notes: true
+          body: ${{ steps.notes.outputs.body }}
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Artifact
+        if: matrix.os != 'ubuntu-latest'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ matrix.artifact }}
+          generate_release_notes: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

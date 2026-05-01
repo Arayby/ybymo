@@ -2,17 +2,19 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, development ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, development ]
 
 jobs:
   test:
     name: Test Suite
     runs-on: ubuntu-latest
+    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
     permissions:
       checks: write
       pull-requests: write
+      contents: read
 
     steps:
       - name: Repository Checkout

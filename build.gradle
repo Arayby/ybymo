@@ -4,7 +4,9 @@ plugins {
 }
 
 group = 'com.arayby'
-version = '1.0-SNAPSHOT'
+version = '1.0.0-SNAPSHOT'
+
+apply from: 'gradle/tasks.gradle'
 
 subprojects {
     apply plugin: 'java'
@@ -43,39 +45,7 @@ subprojects {
     }
 }
 
-tasks.register('validateChangelog') {
-    doLast {
-        def changelogFile = rootProject.file('CHANGELOG.md')
-
-        if (!changelogFile.exists()) {
-            throw new GradleException('❌ CHANGELOG.md não encontrado na raiz do projeto')
-        }
-
-        def changelogContent = changelogFile.text
-
-        if (!changelogContent.contains('[Planejado]')) {
-            throw new GradleException('❌ CHANGELOG.md precisa conter a seção [Planejado]')
-        }
-
-        def unreleaseStart = changelogContent.indexOf('[Planejado]')
-        def nextVersionStart = changelogContent.indexOf('## [', unreleaseStart + 1)
-
-        if (nextVersionStart == -1) {
-            nextVersionStart = changelogContent.length()
-        }
-
-        def unreleaseSection = changelogContent.substring(unreleaseStart, nextVersionStart)
-
-        def hasEntries = unreleaseSection.contains('\n- ')
-
-        if (!hasEntries) {
-            throw new GradleException('❌ CHANGELOG.md seção [Planejado] precisa conter pelo menos uma entrada de mudança')
-        }
-
-        logger.quiet('✅ CHANGELOG.md validado com sucesso')
-    }
-}
-
 subprojects {
     tasks.build.dependsOn rootProject.tasks.validateChangelog
+    tasks.build.dependsOn rootProject.tasks.validateVersionSync
 }
