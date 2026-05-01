@@ -19,6 +19,22 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 ## [Planejado]
 
 ### Adicionado
+
+### Alterado
+
+### Corrigido
+
+### Descontinuado
+
+### Removido
+
+### Segurança
+
+---
+
+## [1.1.0] - 01/05/2026
+
+### Adicionado
 - Novo workflow: `tag.yml` para geração de tag baseada em CHANGELOG
 - GitHub Environments: `production` (main) e `development` (branches) para isolamento de CI/CD
 - Gradle task: `extractVersion` para parsing determinístico de versão do CHANGELOG
@@ -33,12 +49,6 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 - Dependência adicionada para `validateVersionSync` no build do projeto
 - Melhoria na estrutura e organização dos arquivos `README.md` e `CONTRIBUTING.md` para maior clareza e acolhimento a novos contribuidores.
 - Adicionadas categorias padrão de documentação e aviso de quebra de build no cabeçalho do `CHANGELOG.md`.
-
-### Corrigido
-
-### Descontinuado
-
-### Removido
 
 ### Segurança
 - Validação de geração de tag implementado no workflow
