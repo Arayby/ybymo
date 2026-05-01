@@ -1,0 +1,131 @@
+name: Tag
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'CHANGELOG.md'
+      - 'build.gradle'
+
+jobs:
+  create-tag:
+    name: Create Tag
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: write
+      pull-requests: read
+
+    steps:
+      - name: Repository Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: GraalVM Setup
+        uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '25'
+          distribution: 'graalvm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Version
+        id: extract_version
+        run: |
+          # Usar task Gradle para extrair versão com validação
+          VERSION=$(./gradlew -q extractVersion 2>&1 | tail -1 | grep -oP '\d+\.\d+\.\d+' | head -1)
+          
+          if [ -z "$VERSION" ]; then
+            echo "❌ Falha ao extrair versão do CHANGELOG.md"
+            exit 1
+          fi
+          
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Versão extraída: $VERSION"
+
+      - name: Check Tag
+        id: check_tag
+        run: |
+          TAG="v${{ steps.extract_version.outputs.version }}"
+          
+          if git tag -l "$TAG" | grep -q "$TAG"; then
+            echo "⚠️ Tag $TAG já existe"
+            echo "tag_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "✅ Tag $TAG não existe, será criada"
+            echo "tag_exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Compare Version
+        if: steps.check_tag.outputs.tag_exists == 'false'
+        run: |
+          CURRENT_VERSION=$(grep "^version = " build.gradle | sed "s/version = '//;s/-.*//" | head -1)
+          NEW_VERSION="${{ steps.extract_version.outputs.version }}"
+          
+          echo "Versão em build.gradle: $CURRENT_VERSION"
+          echo "Versão do CHANGELOG: $NEW_VERSION"
+          
+          # Se versão em build.gradle é SNAPSHOT, está esperando release
+          if [[ "$CURRENT_VERSION" == *"SNAPSHOT"* ]] || [[ "$CURRENT_VERSION" != "$NEW_VERSION" ]]; then
+            echo "✅ Versão sincronizada para release"
+          fi
+
+      - name: Update Version
+        if: steps.check_tag.outputs.tag_exists == 'false'
+        run: |
+          VERSION="${{ steps.extract_version.outputs.version }}"
+          
+          # Atualizar versão para release (remover -SNAPSHOT)
+          sed -i "s/^version = '.*/version = '$VERSION'/" build.gradle
+          
+          echo "✅ build.gradle atualizado para versão: $VERSION"
+
+      - name: Create Tag
+        if: steps.check_tag.outputs.tag_exists == 'false'
+        run: |
+          VERSION="${{ steps.extract_version.outputs.version }}"
+          TAG="v$VERSION"
+          
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Criar tag anotada com mensagem simples
+          git tag -a "$TAG" -m "Release $VERSION" || echo "Tag creation failed"
+          
+          echo "✅ Tag $TAG criada localmente"
+
+      - name: Commit Version
+        if: steps.check_tag.outputs.tag_exists == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Preparar próxima versão SNAPSHOT
+          CURRENT_VERSION="${{ steps.extract_version.outputs.version }}"
+          NEXT_MINOR=$(echo $CURRENT_VERSION | awk -F. '{print $1"."$2+1".0"}')
+          NEXT_VERSION="$NEXT_MINOR-SNAPSHOT"
+          
+          sed -i "s/^version = '.*/version = '$NEXT_VERSION'/" build.gradle
+          
+          git add build.gradle
+          git commit -m "chore(release): bump version to $NEXT_VERSION" || echo "✅ Nenhuma alteração para commit"
+
+      - name: Push Changes
+        if: steps.check_tag.outputs.tag_exists == 'false'
+        run: |
+          TAG="v${{ steps.extract_version.outputs.version }}"
+          
+          # Push commits
+          git push origin main --force
+          
+          # Push tag (dispara release.yml automaticamente)
+          git push origin "$TAG"
+          
+          echo "✅ Tag $TAG e commits feitos push com sucesso"
+
+      - name: Skip Release
+        if: steps.check_tag.outputs.tag_exists == 'true'
+        run: |
+          echo "✅ Tag v${{ steps.extract_version.outputs.version }} já existe"
+          echo "Release workflow já foi executado para esta versão"
