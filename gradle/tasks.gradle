@@ -13,26 +13,22 @@ validateChangelog.configure {
 
         def changelogContent = changelogFile.text
 
-        if (!changelogContent.contains('[Planejado]')) {
-            throw new GradleException('❌ CHANGELOG.md precisa conter a seção [Planejado]')
+        def snapshotHeaderPattern = /^## \[((\d+\.\d+\.\d+|X\.Y\.Z)-SNAPSHOT)]/
+        def topSnapshotVersion = null
+
+        for (String line : changelogContent.split('\n')) {
+            def matcher = line =~ snapshotHeaderPattern
+            if (matcher.find()) {
+                topSnapshotVersion = matcher.group(1)
+                break
+            }
         }
 
-        def unreleaseStart = changelogContent.indexOf('[Planejado]')
-        def nextVersionStart = changelogContent.indexOf('## [', unreleaseStart + 1)
-
-        if (nextVersionStart == -1) {
-            nextVersionStart = changelogContent.length()
+        if (topSnapshotVersion == null) {
+            throw new GradleException('❌ CHANGELOG.md precisa iniciar com uma seção de desenvolvimento no formato ## [X.Y.Z-SNAPSHOT]')
         }
 
-        def unreleaseSection = changelogContent.substring(unreleaseStart, nextVersionStart)
-
-        def hasEntries = unreleaseSection.contains('\n- ')
-
-        if (!hasEntries) {
-            throw new GradleException('❌ CHANGELOG.md seção [Planejado] precisa conter pelo menos uma entrada de mudança')
-        }
-
-        logger.quiet('✅ CHANGELOG.md validado com sucesso')
+        logger.quiet("✅ CHANGELOG.md validado com sucesso (${topSnapshotVersion})")
     }
 }
 
@@ -52,13 +48,13 @@ validateVersionSync.configure {
         def changelogContent = changelogFile.text
         def buildContent = buildFile.text
 
-        def changelogPattern = /^## \[(\d+\.\d+\.\d+)\]/
-        def changelogVersion = null
+        def changelogSnapshotPattern = /^## \[((\d+\.\d+\.\d+|X\.Y\.Z)-SNAPSHOT)\]/
+        def changelogSnapshotVersion = null
 
         for (String line : changelogContent.split('\n')) {
-            def matcher = line =~ changelogPattern
+            def matcher = line =~ changelogSnapshotPattern
             if (matcher.find()) {
-                changelogVersion = matcher.group(1)
+                changelogSnapshotVersion = matcher.group(1)
                 break
             }
         }
@@ -70,21 +66,28 @@ validateVersionSync.configure {
             buildVersion = matcher.group(1)
         }
 
-        if (changelogVersion) {
-            def cleanBuildVersion = buildVersion.replace("-SNAPSHOT", "")
-            if (buildVersion && cleanBuildVersion != changelogVersion) {
-                throw new GradleException("""❌ SINCRONIZAÇÃO INVÁLIDA:
-   CHANGELOG: [${changelogVersion}] (preparado para release)
-   build.gradle: ${buildVersion}
-   
-   ℹ️  Assegure-se de que a versão em build.gradle (${cleanBuildVersion}) seja igual a do CHANGELOG (${changelogVersion}).""")
-            }
+        if (!changelogSnapshotVersion) {
+            throw new GradleException('❌ Nenhuma seção SNAPSHOT encontrada no CHANGELOG.md. Formato esperado: ## [X.Y.Z-SNAPSHOT]')
+        }
 
-            logger.quiet("✅ Release sincronizado: CHANGELOG=[${changelogVersion}], build.gradle=${buildVersion}")
+        if (!buildVersion) {
+            throw new GradleException('❌ Versão não encontrada no build.gradle')
+        }
+
+        if (changelogSnapshotVersion == 'X.Y.Z-SNAPSHOT') {
+            logger.quiet("✅ Versionamento sincronizado: CHANGELOG=[${changelogSnapshotVersion}] (placeholder ativo)")
             return
         }
 
-        logger.quiet('✅ Versionamento sincronizado')
+        if (buildVersion != changelogSnapshotVersion) {
+            throw new GradleException("""❌ VERSÕES DESALINHADAS:
+   CHANGELOG: [${changelogSnapshotVersion}]
+   build.gradle: ${buildVersion}
+
+   ℹ️  build.gradle deve estar exatamente igual à seção SNAPSHOT ativa do CHANGELOG.""")
+        }
+
+        logger.quiet("✅ Versionamento sincronizado: CHANGELOG=[${changelogSnapshotVersion}], build.gradle=${buildVersion}")
     }
 }
 
@@ -114,7 +117,7 @@ extractVersion.configure {
         }
 
         if (version == null) {
-            throw new GradleException('❌ Nenhuma versão válida encontrada no CHANGELOG.md. Formato esperado: ## [X.Y.Z]')
+            throw new GradleException('❌ Nenhuma versão de release encontrada no CHANGELOG.md. Formato esperado: ## [X.Y.Z]')
         }
 
         logger.quiet("✅ Versão extraída do CHANGELOG: $version")

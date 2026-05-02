@@ -56,7 +56,7 @@ Contribuições são bem-vindas! O fluxo é simples:
 
 1.  **Crie uma branch**: `git checkout -b feat/minha-feature`.
 2.  **Desenvolva**: Adicione seu código e testes.
-3.  **Atualize o CHANGELOG**: Adicione uma entrada na seção `[Planejado]` do [CHANGELOG.md](CHANGELOG.md).
+3.  **Atualize o CHANGELOG**: Adicione uma entrada na seção de snapshot ativo (`[X.Y.Z-SNAPSHOT]`) do [CHANGELOG.md](CHANGELOG.md).
 4.  **Valide localmente**: Rode `./gradlew build`.
 5.  **Envie um Pull Request**.
 
@@ -66,7 +66,7 @@ Para um guia detalhado sobre o fluxo de desenvolvimento, versionamento, e padrõ
 
 - **Versionamento**: Utilização de Semantic Versioning.
 - **Histórico de Mudanças**: Alterações são documentadas no CHANGELOG.md.
-- **Processo de Release**: Lançamento de novas versões de forma automatizada.
+- **Processo de Release**: Merge na `main` com `CHANGELOG.md`/`build.gradle` em estado de release cria a tag automaticamente; a publicação da release com binários Linux/macOS/Windows ocorre no workflow de release.
 
 ## Licença
 

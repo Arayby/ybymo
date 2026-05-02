@@ -113,20 +113,16 @@ jobs:
 
       - name: Extract Notes
         if: matrix.os == 'ubuntu-latest'
-        id: release_notes
-        run: ./gradlew -q extractReleaseNotes 2>&1 | tail -1 > release-notes.txt
-
-      - name: Read Notes
-        if: matrix.os == 'ubuntu-latest'
-        id: notes
-        run: echo "body=$(cat release-notes.txt | jq -Rs .)" >> $GITHUB_OUTPUT
+        run: |
+          ./gradlew -q extractReleaseNotes
+          cp build/release-notes.txt release-notes.txt
 
       - name: Release Artifact
         if: matrix.os == 'ubuntu-latest' || github.event.inputs.skip_matrix == 'true'
         uses: softprops/action-gh-release@v2
         with:
           files: ${{ matrix.artifact }}
-          body: ${{ steps.notes.outputs.body }}
+          body_path: release-notes.txt
           generate_release_notes: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
