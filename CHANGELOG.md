@@ -32,6 +32,18 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ---
 
+## [1.1.1] - 02/05/2026
+
+### Adicionado
+- Workflow `release.yml` agora possui disparo manual `workflow_dispatch`.
+- Workflow `tag.yml` para geração de tag baseada em CHANGELOG sem comitar diretamente na `main` protegida.
+
+### Alterado
+- Task de Gradle `validateVersionSync` reajustada para não checar se a versão em `build.gradle` inclui o `SNAPSHOT` antes da release.
+- Documentação CONTRIBUTING.md atualizada com novo fluxo de release manual de tags para se adequar a ambiente GitHub restrito.
+
+---
+
 ## [1.1.0] - 01/05/2026
 
 ### Adicionado
@@ -79,5 +91,6 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ---
 
-[Planejado]: https://github.com/arayby/ybymo/compare/1.0.0...HEAD
+[Planejado]: https://github.com/arayby/ybymo/compare/1.1.0...HEAD
+[1.1.0]: https://github.com/arayby/ybymo/releases/tag/v1.1.0
 [1.0.0]: https://github.com/arayby/ybymo/releases/tag/v1.0.0
