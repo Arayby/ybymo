@@ -74,15 +74,16 @@ Ele instalará e configurará a versão correta do Java automaticamente.
 
 ### 3. Processo de Release
 
-O processo de release é automatizado:
+O processo de release é automatizado, mas requer ajustes manuais na versão antes de enviar para a `main`:
 
 1.  **Crie uma release branch**: `release/vX.Y.Z`.
-2.  **Atualize o CHANGELOG**: Mova o conteúdo de `[Planejado]` para uma nova versão, ex: `[1.1.0] - DD/MM/YYYY`.
-3.  **Sincronize a versão**: Rode `./gradlew validateVersionSync` para garantir que a versão do `build.gradle` e `CHANGELOG.md` estão alinhadas.
-4.  **Abra um Pull Request**: Envie o Pull Request da release branch para a `main`.
-5.  **Merge**: Após a aprovação e merge, o GitHub Actions irá:
+2.  **Atualize o CHANGELOG**: Mova o conteúdo de `[Planejado]` para uma nova versão, ex: `## [1.1.0] - DD/MM/YYYY`.
+3.  **Atualize o build.gradle**: Altere manualmente o `build.gradle` removendo o sufixo `-SNAPSHOT` da versão que você vai lançar, ou mude a versão base, deixando-a igual a do CHANGELOG. Ex: `version = '1.1.0'`.
+4.  **Sincronize a versão**: Rode `./gradlew validateVersionSync` para garantir que a versão do `build.gradle` e `CHANGELOG.md` estão alinhadas.
+5.  **Abra um Pull Request e Merge**: Envie o Pull Request da release branch para a `main`.
+6.  **Automação do GitHub**: Após o merge na `main`, o GitHub Actions irá:
+    -   Ler a versão descrita no CHANGELOG.md.
     -   Criar uma tag Git (`vX.Y.Z`).
-    -   Gerar os artefatos da release.
+    -   Acionar o workflow de release para gerar os artefatos.
     -   Publicar a nova versão no GitHub Releases.
-
-Este fluxo garante que cada versão seja bem documentada e o processo, consistente.
+7.  **Pós-Release**: Crie um novo commit na `main` mudando a versão no `build.gradle` para a próxima versão SNAPSHOT (ex: `version = '1.2.0-SNAPSHOT'`).

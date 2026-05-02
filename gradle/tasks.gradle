@@ -71,12 +71,13 @@ validateVersionSync.configure {
         }
 
         if (changelogVersion) {
-            if (buildVersion && !buildVersion.endsWith('-SNAPSHOT')) {
+            def cleanBuildVersion = buildVersion.replace("-SNAPSHOT", "")
+            if (buildVersion && cleanBuildVersion != changelogVersion) {
                 throw new GradleException("""❌ SINCRONIZAÇÃO INVÁLIDA:
    CHANGELOG: [${changelogVersion}] (preparado para release)
-   build.gradle: ${buildVersion} (deveria ser ${changelogVersion}-SNAPSHOT)
+   build.gradle: ${buildVersion}
    
-   ℹ️  Mantenha build.gradle em SNAPSHOT até o workflow criar a tag.""")
+   ℹ️  Assegure-se de que a versão em build.gradle (${cleanBuildVersion}) seja igual a do CHANGELOG (${changelogVersion}).""")
             }
 
             logger.quiet("✅ Release sincronizado: CHANGELOG=[${changelogVersion}], build.gradle=${buildVersion}")
