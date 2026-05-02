@@ -31,7 +31,7 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 - Workflow `tag.yml` simplificado para validar sincronização, extrair versão de release via `build/version.txt` e criar/push da tag sem commit automático na `main`.
 - Workflow `release.yml` ajustado para publicar notas da release via `body_path` usando o arquivo gerado pela task `extractReleaseNotes`.
 - Task `validateVersionSync` fortalecida para exigir igualdade exata entre versão do `build.gradle` e seção snapshot ativa do `CHANGELOG.md`.
-- Fluxo de CI fortalecido para validar build nativo multi-OS antes do merge em `main`.
+- Fluxo de CI fortalecido para validar build nativo multi-OS em pushes e pull requests de `main` e `development`.
 
 ### Corrigido
 - Removido comportamento de push forçado na `main` durante o processo de tag.
@@ -39,6 +39,8 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ### Segurança
 - Fluxo de tag endurecido para não recriar tags existentes.
+- Workflows `ci.yml` e `release.yml` passaram a declarar permissões explícitas do `GITHUB_TOKEN` com privilégio mínimo por workflow/job.
+- Removida permissão `pull-requests: write` dos jobs de teste, mantendo apenas `checks: write` e `contents: read`.
 
 ---
 
