@@ -24,12 +24,14 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ### Adicionado
 - Workflow `ci.yml` agora executa validação explícita de sincronização de versão com `./gradlew validateVersionSync`.
+- Workflow `ci.yml` agora gera binários nativos para Linux/macOS/Windows em ambiente de desenvolvimento e publica como artifacts do workflow.
 
 ### Alterado
 - Padrão do changelog atualizado de `[Planejado]` para seção de snapshot versionada no formato `## [X.Y.Z-SNAPSHOT] - DD/MM/AAAA`.
 - Workflow `tag.yml` simplificado para validar sincronização, extrair versão de release via `build/version.txt` e criar/push da tag sem commit automático na `main`.
 - Workflow `release.yml` ajustado para publicar notas da release via `body_path` usando o arquivo gerado pela task `extractReleaseNotes`.
 - Task `validateVersionSync` fortalecida para exigir igualdade exata entre versão do `build.gradle` e seção snapshot ativa do `CHANGELOG.md`.
+- Fluxo de CI fortalecido para validar build nativo multi-OS antes do merge em `main`.
 
 ### Corrigido
 - Removido comportamento de push forçado na `main` durante o processo de tag.
