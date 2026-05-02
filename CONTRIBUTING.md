@@ -15,7 +15,7 @@ Quer fazer sua primeira contribuição? Siga estes passos:
 
 1.  **Crie uma branch**: `git checkout -b fix/corrige-erro-leia-me`
 2.  **Faça sua mudança**: Corrija um erro de digitação ou melhore uma frase na documentação.
-3.  **Atualize o CHANGELOG**: Adicione `- Correção de erro de digitação no README.md` na seção `[Planejado]` do `CHANGELOG.md`.
+3.  **Atualize o CHANGELOG**: Adicione `- Correção de erro de digitação no README.md` na seção de snapshot ativo (`[X.Y.Z-SNAPSHOT]`) do `CHANGELOG.md`.
 4.  **Faça o commit**: `git commit -m "docs: corrige erro de digitação no README"`
 5.  **Abra um Pull Request** e aguarde a revisão!
 
@@ -46,12 +46,12 @@ Ele instalará e configurará a versão correta do Java automaticamente.
 
 3.  **Atualize o CHANGELOG.md**:
     -   Este passo é **obrigatório**. Builds e Pull Requests falharão se o `CHANGELOG.md` não for modificado.
-    -   Adicione uma nova entrada na seção `[Planejado]`.
+    -   Adicione uma nova entrada na seção de snapshot ativo (`[X.Y.Z-SNAPSHOT]`).
     -   Use uma das categorias indicadas no `CHANGELOG.md`.
 
     **Exemplo:**
     ```markdown
-    ### [Planejado]
+    ### [1.1.0-SNAPSHOT]
 
     #### Adicionado
     - Nova funcionalidade de exportação para JSON.
@@ -74,16 +74,20 @@ Ele instalará e configurará a versão correta do Java automaticamente.
 
 ### 3. Processo de Release
 
-O processo de release é automatizado, mas requer ajustes manuais na versão antes de enviar para a `main`:
+O processo de release é automatizado:
 
-1.  **Crie uma release branch**: `release/vX.Y.Z`.
-2.  **Atualize o CHANGELOG**: Mova o conteúdo de `[Planejado]` para uma nova versão, ex: `## [1.1.0] - DD/MM/YYYY`.
-3.  **Atualize o build.gradle**: Altere manualmente o `build.gradle` removendo o sufixo `-SNAPSHOT` da versão que você vai lançar, ou mude a versão base, deixando-a igual a do CHANGELOG. Ex: `version = '1.1.0'`.
-4.  **Sincronize a versão**: Rode `./gradlew validateVersionSync` para garantir que a versão do `build.gradle` e `CHANGELOG.md` estão alinhadas.
-5.  **Abra um Pull Request e Merge**: Envie o Pull Request da release branch para a `main`.
-6.  **Automação do GitHub**: Após o merge na `main`, o GitHub Actions irá:
-    -   Ler a versão descrita no CHANGELOG.md.
+1.  **Prepare a versão de release**:
+    - Atualize o `CHANGELOG.md` para incluir a seção `## [X.Y.Z] - DD/MM/AAAA`.
+    - Mantenha no topo a seção de desenvolvimento `## [X.Y.Z-SNAPSHOT] - DD/MM/AAAA` (placeholder para o próximo ciclo).
+2.  **Sincronize a versão**: Rode `./gradlew validateVersionSync` para garantir que a versão do `build.gradle` e `CHANGELOG.md` estão alinhadas.
+3.  **Abra um Pull Request para `main`**:
+    - A branch pode ser `release/*`, `feat/*`, `fix/*` ou outra convenção do time.
+4.  **Merge**: Após a aprovação e merge, o GitHub Actions irá:
     -   Criar uma tag Git (`vX.Y.Z`).
-    -   Acionar o workflow de release para gerar os artefatos.
+    -   Gerar os artefatos da release.
     -   Publicar a nova versão no GitHub Releases.
-7.  **Pós-Release**: Crie um novo commit na `main` mudando a versão no `build.gradle` para a próxima versão SNAPSHOT (ex: `version = '1.2.0-SNAPSHOT'`).
+5.  **Inicie o próximo ciclo**:
+    - Atualize `build.gradle` para a próxima versão de desenvolvimento (ex.: `X.Y.(Z+1)-SNAPSHOT`).
+    - Use a seção de snapshot ativa do `CHANGELOG.md` para registrar as novas mudanças.
+
+Este fluxo garante que cada versão seja bem documentada e o processo, consistente.

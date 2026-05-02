@@ -14,14 +14,12 @@ jobs:
     environment: production
     permissions:
       contents: write
-      pull-requests: read
 
     steps:
       - name: Repository Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: GraalVM Setup
         uses: graalvm/setup-graalvm@v1
@@ -30,31 +28,33 @@ jobs:
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract Version
+      - name: Gradlew Permissions
+        run: chmod +x ./gradlew
+
+      - name: Validate Sync
+        run: ./gradlew validateChangelog validateVersionSync
+
+      - name: Extract Release Version
         id: extract_version
         run: |
-          # Usar task Gradle para extrair versão com validação
-          VERSION=$(./gradlew -q extractVersion 2>&1 | tail -1 | grep -oP '\d+\.\d+\.\d+' | head -1)
-          
+          ./gradlew -q extractVersion
+          VERSION=$(cat build/version.txt)
           if [ -z "$VERSION" ]; then
-            echo "❌ Falha ao extrair versão do CHANGELOG.md"
+            echo "❌ Falha ao extrair versão de release do CHANGELOG.md"
             exit 1
           fi
-          
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Versão extraída: $VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Check Tag
         id: check_tag
         run: |
           TAG="v${{ steps.extract_version.outputs.version }}"
-          
-          if git tag -l "$TAG" | grep -q "$TAG"; then
-            echo "⚠️ Tag $TAG já existe"
-            echo "tag_exists=true" >> $GITHUB_OUTPUT
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "tag_exists=true" >> "$GITHUB_OUTPUT"
+            echo "ℹ️ Tag $TAG já existe. Nada para criar."
           else
-            echo "✅ Tag $TAG não existe, será criada"
-            echo "tag_exists=false" >> $GITHUB_OUTPUT
+            echo "tag_exists=false" >> "$GITHUB_OUTPUT"
+            echo "✅ Tag $TAG disponível para criação"
           fi
 
       - name: Create Tag
@@ -62,27 +62,9 @@ jobs:
         run: |
           VERSION="${{ steps.extract_version.outputs.version }}"
           TAG="v$VERSION"
-          
+
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # Criar tag anotada com mensagem simples
-          git tag -a "$TAG" -m "Release $VERSION" || echo "Tag creation failed"
-          
-          echo "✅ Tag $TAG criada localmente"
 
-      - name: Push Tag
-        if: steps.check_tag.outputs.tag_exists == 'false'
-        run: |
-          TAG="v${{ steps.extract_version.outputs.version }}"
-          
-          # Push apenas da tag (dispara release.yml automaticamente)
+          git tag -a "$TAG" -m "Release $VERSION"
           git push origin "$TAG"
-          
-          echo "✅ Tag $TAG feito push com sucesso"
-
-      - name: Skip Release
-        if: steps.check_tag.outputs.tag_exists == 'true'
-        run: |
-          echo "✅ Tag v${{ steps.extract_version.outputs.version }} já existe"
-          echo "Release workflow já foi executado para esta versão"

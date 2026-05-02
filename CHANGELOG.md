@@ -1,7 +1,7 @@
 # Changelog
 
 
-> IMPORTANTE: Antes de fazer um commit, adicione suas mudanças na seção [Planejado].
+> IMPORTANTE: Antes de fazer um commit, adicione suas mudanças na seção de snapshot ativo (`[X.Y.Z-SNAPSHOT]`).
 > 
 > Obs.: _A build falhará se este arquivo não for atualizado._
 
@@ -16,19 +16,31 @@ Use as seguintes categorias:
 Todas as mudanças neste projeto serão documentadas neste arquivo.
 O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/) e o projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/2.0.0/).
 
-## [Planejado]
+## [X.Y.Z-SNAPSHOT] - DD/MM/AAAA
+
+---
+
+## [1.1.2] - 02/05/2026
 
 ### Adicionado
+- Workflow `ci.yml` agora executa validação explícita de sincronização de versão com `./gradlew validateVersionSync`.
+- Workflow `ci.yml` agora gera binários nativos para Linux/macOS/Windows em ambiente de desenvolvimento e publica como artifacts do workflow.
 
 ### Alterado
+- Padrão do changelog atualizado de `[Planejado]` para seção de snapshot versionada no formato `## [X.Y.Z-SNAPSHOT] - DD/MM/AAAA`.
+- Workflow `tag.yml` simplificado para validar sincronização, extrair versão de release via `build/version.txt` e criar/push da tag sem commit automático na `main`.
+- Workflow `release.yml` ajustado para publicar notas da release via `body_path` usando o arquivo gerado pela task `extractReleaseNotes`.
+- Task `validateVersionSync` fortalecida para exigir igualdade exata entre versão do `build.gradle` e seção snapshot ativa do `CHANGELOG.md`.
+- Fluxo de CI fortalecido para validar build nativo multi-OS em pushes e pull requests de `main` e `development`.
 
 ### Corrigido
-
-### Descontinuado
-
-### Removido
+- Removido comportamento de push forçado na `main` durante o processo de tag.
+- Removida exigência artificial de entrada obrigatória na seção snapshot ativa durante a abertura de novo ciclo.
 
 ### Segurança
+- Fluxo de tag endurecido para não recriar tags existentes.
+- Workflows `ci.yml` e `release.yml` passaram a declarar permissões explícitas do `GITHUB_TOKEN` com privilégio mínimo por workflow/job.
+- Removida permissão `pull-requests: write` dos jobs de teste, mantendo apenas `checks: write` e `contents: read`.
 
 ---
 
@@ -91,6 +103,8 @@ O formato é baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.
 
 ---
 
-[Planejado]: https://github.com/arayby/ybymo/compare/1.1.0...HEAD
+[X.Y.Z-SNAPSHOT]: https://github.com/arayby/ybymo/compare/v1.1.2...HEAD
+[1.1.2]: https://github.com/arayby/ybymo/releases/tag/v1.1.2
+[1.1.1]: https://github.com/arayby/ybymo/releases/tag/v1.1.1
 [1.1.0]: https://github.com/arayby/ybymo/releases/tag/v1.1.0
 [1.0.0]: https://github.com/arayby/ybymo/releases/tag/v1.0.0

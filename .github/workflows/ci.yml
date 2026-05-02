@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ main, development ]
 
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Test Suite
@@ -13,7 +16,6 @@ jobs:
     environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
     permissions:
       checks: write
-      pull-requests: write
       contents: read
 
     steps:
@@ -42,6 +44,9 @@ jobs:
       - name: Validate CHANGELOG
         run: ./gradlew validateChangelog
 
+      - name: Validate Version
+        run: ./gradlew validateVersionSync
+
       - name: Run Tests
         run: ./gradlew test
 
@@ -52,3 +57,66 @@ jobs:
           name: JUnit Results
           path: '**/build/test-results/test/*.xml'
           reporter: java-junit
+
+  build-artifacts:
+    name: Build Artifacts ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    needs: test
+    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact: ybymo-linux-amd64
+            binary: ybymo-cli/build/native/nativeCompile/ybymo
+            bin_name: ybymo
+
+          - os: macos-latest
+            artifact: ybymo-macos-arm64
+            binary: ybymo-cli/build/native/nativeCompile/ybymo
+            bin_name: ybymo
+
+          - os: windows-latest
+            artifact: ybymo-windows-amd64
+            binary: ybymo-cli/build/native/nativeCompile/ybymo.exe
+            bin_name: ybymo.exe
+
+    steps:
+      - name: Repository Checkout
+        uses: actions/checkout@v4
+
+      - name: GraalVM Setup
+        uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '25'
+          distribution: 'graalvm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Gradle Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      - name: Gradlew Permissions
+        if: runner.os != 'Windows'
+        run: chmod +x ./gradlew
+
+      - name: Build Binary
+        run: ./gradlew :ybymo-cli:nativeCompile
+
+      - name: Prepare Artifact
+        shell: bash
+        run: |
+          cp ${{ matrix.binary }} ${{ matrix.bin_name }}
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.bin_name }}
+          if-no-files-found: error
