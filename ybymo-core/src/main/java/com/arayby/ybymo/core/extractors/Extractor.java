@@ -1,6 +1,6 @@
-package com.arayby.ybymo.core.extractor;
+package com.arayby.ybymo.core.extractors;
 
-import com.arayby.ybymo.core.model.DataRecord;
+import com.arayby.ybymo.core.models.DataRecord;
 
 import java.io.IOException;
 import java.nio.file.Path;

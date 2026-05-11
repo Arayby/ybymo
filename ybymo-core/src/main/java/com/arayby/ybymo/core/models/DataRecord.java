@@ -1,4 +1,4 @@
-package com.arayby.ybymo.core.model;
+package com.arayby.ybymo.core.models;
 
 import java.util.List;
 

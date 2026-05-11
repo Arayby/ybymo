@@ -1,6 +1,6 @@
 package com.arayby.ybymo.cli;
 
-import com.arayby.ybymo.cli.command.CsvCommand;
+import com.arayby.ybymo.cli.commands.CsvCommand;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 

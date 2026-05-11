@@ -1,7 +1,7 @@
-package com.arayby.ybymo.core.pipeline;
+package com.arayby.ybymo.core.pipelines;
 
-import com.arayby.ybymo.core.model.DataRecord;
-import com.arayby.ybymo.core.transformer.Transformer;
+import com.arayby.ybymo.core.models.DataRecord;
+import com.arayby.ybymo.core.transformers.Transformer;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

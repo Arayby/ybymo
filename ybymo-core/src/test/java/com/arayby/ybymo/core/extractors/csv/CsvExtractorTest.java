@@ -1,6 +1,6 @@
-package com.arayby.ybymo.core.extractor.csv;
+package com.arayby.ybymo.core.extractors.csv;
 
-import com.arayby.ybymo.core.model.DataRecord;
+import com.arayby.ybymo.core.models.DataRecord;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 

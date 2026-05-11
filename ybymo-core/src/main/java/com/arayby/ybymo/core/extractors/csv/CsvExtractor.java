@@ -1,7 +1,7 @@
-package com.arayby.ybymo.core.extractor.csv;
+package com.arayby.ybymo.core.extractors.csv;
 
-import com.arayby.ybymo.core.extractor.Extractor;
-import com.arayby.ybymo.core.model.DataRecord;
+import com.arayby.ybymo.core.extractors.Extractor;
+import com.arayby.ybymo.core.models.DataRecord;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 

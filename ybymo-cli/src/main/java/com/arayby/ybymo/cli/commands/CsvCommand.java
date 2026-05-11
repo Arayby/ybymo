@@ -1,11 +1,11 @@
-package com.arayby.ybymo.cli.command;
+package com.arayby.ybymo.cli.commands;
 
-import com.arayby.ybymo.core.extractor.csv.CsvExtractor;
-import com.arayby.ybymo.core.model.DataRecord;
-import com.arayby.ybymo.core.pipeline.Pipeline;
-import com.arayby.ybymo.core.transformer.CleanTransformer;
-import com.arayby.ybymo.core.transformer.PrefixTransformer;
-import com.arayby.ybymo.core.transformer.SuffixTransformer;
+import com.arayby.ybymo.core.extractors.csv.CsvExtractor;
+import com.arayby.ybymo.core.models.DataRecord;
+import com.arayby.ybymo.core.pipelines.Pipeline;
+import com.arayby.ybymo.core.transformers.CleanTransformer;
+import com.arayby.ybymo.core.transformers.PrefixTransformer;
+import com.arayby.ybymo.core.transformers.SuffixTransformer;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import picocli.CommandLine.Command;

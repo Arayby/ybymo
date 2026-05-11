@@ -1,4 +1,4 @@
-package com.arayby.ybymo.cli.command;
+package com.arayby.ybymo.cli.commands;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

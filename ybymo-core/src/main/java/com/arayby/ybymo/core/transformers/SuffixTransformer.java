@@ -1,6 +1,6 @@
-package com.arayby.ybymo.core.transformer;
+package com.arayby.ybymo.core.transformers;
 
-import com.arayby.ybymo.core.model.DataRecord;
+import com.arayby.ybymo.core.models.DataRecord;
 
 import java.util.List;
 import java.util.Objects;
