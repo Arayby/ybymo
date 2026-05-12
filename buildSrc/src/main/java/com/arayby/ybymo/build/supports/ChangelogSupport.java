@@ -44,46 +44,33 @@ public final class ChangelogSupport {
     }
 
     public static String extractReleaseNotes(String text) {
-        String[] lines = text.split("\n");
-        StringBuilder releaseNotes = new StringBuilder();
-        boolean captureNotes = false;
-        boolean firstReleaseSectionFound = false;
-        boolean stopCapture = false;
+        String[] lines = text.split("\n", -1);
 
-        for (String line : lines) {
-            if (!stopCapture && isReleaseSectionStart(line)) {
-                if (!firstReleaseSectionFound) {
-                    captureNotes = true;
-                    firstReleaseSectionFound = true;
-                } else {
-                    stopCapture = true;
-                }
-            }
-
-            if (!stopCapture && captureNotes && isCaptureStopMarker(line)) {
-                stopCapture = true;
-            }
-
-            if (!stopCapture && captureNotes) {
-                appendLine(releaseNotes, line);
+        int start = -1;
+        for (int i = 0; i < lines.length; i++) {
+            if (RELEASE_SECTION_START_PATTERN.matcher(lines[i]).find()) {
+                start = i;
+                break;
             }
         }
 
-        return releaseNotes.toString().trim();
-    }
-
-    private static boolean isReleaseSectionStart(String line) {
-        return RELEASE_SECTION_START_PATTERN.matcher(line).find();
-    }
-
-    private static boolean isCaptureStopMarker(String line) {
-        return "---".equals(line) || line.matches("^## \\[.*");
-    }
-
-    private static void appendLine(StringBuilder releaseNotes, String line) {
-        if (!line.trim().isEmpty()) {
-            releaseNotes.append(line);
+        if (start < 0) {
+            return "";
         }
-        releaseNotes.append('\n');
+
+        int end = lines.length;
+        for (int i = start + 1; i < lines.length; i++) {
+            if (lines[i].matches("^## \\[.*")) {
+                end = i;
+                break;
+            }
+        }
+
+        StringBuilder out = new StringBuilder();
+        for (int i = start; i < end; i++) {
+            out.append(lines[i]).append('\n');
+        }
+
+        return out.toString().trim();
     }
 }
