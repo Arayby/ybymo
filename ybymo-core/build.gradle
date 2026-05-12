@@ -1,4 +1,9 @@
+version = '1.2.0'
+
 dependencies {
-    implementation 'com.jayway.jsonpath:json-path:2.9.0'
-    implementation 'org.apache.commons:commons-csv:1.11.0'
+    implementation libs.bundles.common
+    implementation libs.jsonpath
+    implementation libs.commons.csv
+
+    testImplementation libs.bundles.testing
 }

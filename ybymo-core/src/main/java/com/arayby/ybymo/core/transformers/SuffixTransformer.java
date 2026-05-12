@@ -1,24 +1,25 @@
 package com.arayby.ybymo.core.transformers;
 
+import com.arayby.ybymo.core.messages.KeyMessage;
 import com.arayby.ybymo.core.models.DataRecord;
+import com.arayby.ybymo.core.validators.ArgumentValidator;
 
 import java.util.List;
-import java.util.Objects;
 
 public final class SuffixTransformer implements Transformer {
 
     private final String suffix;
 
     public SuffixTransformer(String suffix) {
-        this.suffix = Objects.requireNonNull(suffix, "Sufixo não pode ser nulo");
+        this.suffix = ArgumentValidator.requireNonNull(suffix, KeyMessage.PARAMETER_SUFFIX);
     }
 
     @Override
-    public DataRecord transform(DataRecord record) {
-        List<DataRecord.Field> suffixed = record.fields().stream().map(field -> field.withValue(switch (field.value()) {
+    public DataRecord transform(DataRecord dataRecord) {
+        List<DataRecord.Field> suffixed = dataRecord.fields().stream().map(field -> field.withValue(switch (field.value()) {
             case null -> null;
             case String v -> v + suffix;
         })).toList();
-        return record.withFields(suffixed);
+        return dataRecord.withFields(suffixed);
     }
 }

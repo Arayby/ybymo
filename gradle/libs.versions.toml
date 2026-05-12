@@ -1,0 +1,37 @@
+[versions]
+junit = "5.12.2"
+assertj = "3.27.3"
+slf4j = "2.0.17"
+logback = "1.5.32"
+picocli = "4.7.6"
+commons-csv = "1.11.0"
+jsonpath = "2.9.0"
+sonarqube = "7.2.2.6593"
+graalvmNative = "0.10.4"
+
+[libraries]
+# Logging
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+
+# Testing
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+
+# CLI
+picocli-core = { module = "info.picocli:picocli", version.ref = "picocli" }
+picocli-codegen = { module = "info.picocli:picocli-codegen", version.ref = "picocli" }
+
+# Data Processing
+commons-csv = { module = "org.apache.commons:commons-csv", version.ref = "commons-csv" }
+jsonpath = { module = "com.jayway.jsonpath:json-path", version.ref = "jsonpath" }
+
+[bundles]
+common = ["slf4j-api"]
+logging-runtime = ["logback-classic"]
+testing = ["junit-jupiter", "junit-platform-launcher", "assertj-core"]
+
+[plugins]
+sonarqube = { id = "org.sonarqube", version.ref = "sonarqube" }
+graalvmNative = { id = "org.graalvm.buildtools.native", version.ref = "graalvmNative" }

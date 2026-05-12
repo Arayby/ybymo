@@ -83,8 +83,8 @@ public class CsvCommand implements Runnable {
                 printer.printRecord((Object[]) headerValues);
             }
 
-            for (DataRecord record : transformedData) {
-                String[] values = record.fields().stream().map(DataRecord.Field::value).toArray(String[]::new);
+            for (DataRecord dataRecord : transformedData) {
+                String[] values = dataRecord.fields().stream().map(DataRecord.Field::value).toArray(String[]::new);
                 printer.printRecord((Object[]) values);
             }
 

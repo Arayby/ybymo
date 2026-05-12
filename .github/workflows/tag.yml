@@ -4,51 +4,65 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'CHANGELOG.md'
-      - 'build.gradle'
+      - 'ybymo-core/**'
+      - 'ybymo-cli/**'
+
+permissions:
+  contents: read
 
 jobs:
-  create-tag:
-    name: Create Tag
+  tag-core:
+    name: Tag Core
     runs-on: ubuntu-latest
-    environment: production
     permissions:
       contents: write
 
     steps:
       - name: Repository Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           fetch-depth: 0
 
       - name: GraalVM Setup
-        uses: graalvm/setup-graalvm@v1
+        uses: graalvm/setup-graalvm@bef4b0e916c7dd079bf60fb95d49139f67e32c5f
         with:
           java-version: '25'
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Gradle Cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
       - name: Gradlew Permissions
         run: chmod +x ./gradlew
 
-      - name: Validate Sync
-        run: ./gradlew validateChangelog validateVersionSync
+      - name: Validate Core
+        run: |
+          cd ybymo-core
+          ../gradlew validateChangelog validateVersionSync
 
-      - name: Extract Release Version
+      - name: Extract Core Version
         id: extract_version
         run: |
-          ./gradlew -q extractVersion
-          VERSION=$(cat build/version.txt)
+          cd ybymo-core
+          ../gradlew -q extractVersion
+          VERSION=$(cat ../build/version.txt)
           if [ -z "$VERSION" ]; then
-            echo "❌ Falha ao extrair versão de release do CHANGELOG.md"
+            echo "❌ Falha ao extrair versão de release do ybymo-core/CHANGELOG.md"
             exit 1
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Check Tag
+      - name: Check Core Tag
         id: check_tag
         run: |
-          TAG="v${{ steps.extract_version.outputs.version }}"
+          TAG="core-v${{ steps.extract_version.outputs.version }}"
           if git rev-parse "$TAG" >/dev/null 2>&1; then
             echo "tag_exists=true" >> "$GITHUB_OUTPUT"
             echo "ℹ️ Tag $TAG já existe. Nada para criar."
@@ -57,14 +71,86 @@ jobs:
             echo "✅ Tag $TAG disponível para criação"
           fi
 
-      - name: Create Tag
+      - name: Create Core Tag
         if: steps.check_tag.outputs.tag_exists == 'false'
         run: |
           VERSION="${{ steps.extract_version.outputs.version }}"
-          TAG="v$VERSION"
+          TAG="core-v$VERSION"
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          git tag -a "$TAG" -m "Release $VERSION"
+          git tag -a "$TAG" -m "Core Release $VERSION"
+          git push origin "$TAG"
+
+  tag-cli:
+    name: Tag CLI
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Repository Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          fetch-depth: 0
+
+      - name: GraalVM Setup
+        uses: graalvm/setup-graalvm@bef4b0e916c7dd079bf60fb95d49139f67e32c5f
+        with:
+          java-version: '25'
+          distribution: 'graalvm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Gradle Cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      - name: Gradlew Permissions
+        run: chmod +x ./gradlew
+
+      - name: Validate CLI
+        run: |
+          cd ybymo-cli
+          ../gradlew validateChangelog validateVersionSync
+
+      - name: Extract CLI Version
+        id: extract_version
+        run: |
+          cd ybymo-cli
+          ../gradlew -q extractVersion
+          VERSION=$(cat ../build/version.txt)
+          if [ -z "$VERSION" ]; then
+            echo "❌ Falha ao extrair versão de release do ybymo-cli/CHANGELOG.md"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Check CLI Tag
+        id: check_tag
+        run: |
+          TAG="cli-v${{ steps.extract_version.outputs.version }}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "tag_exists=true" >> "$GITHUB_OUTPUT"
+            echo "ℹ️ Tag $TAG já existe. Nada para criar."
+          else
+            echo "tag_exists=false" >> "$GITHUB_OUTPUT"
+            echo "✅ Tag $TAG disponível para criação"
+          fi
+
+      - name: Create CLI Tag
+        if: steps.check_tag.outputs.tag_exists == 'false'
+        run: |
+          VERSION="${{ steps.extract_version.outputs.version }}"
+          TAG="cli-v$VERSION"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git tag -a "$TAG" -m "CLI Release $VERSION"
           git push origin "$TAG"

@@ -1,0 +1,20 @@
+package com.arayby.ybymo.core.messages;
+
+public enum KeyMessage {
+
+    // Utilities
+    UTILITY_CLASS_SHOULD_NOT_BE_INSTANTIATED,
+
+    // Parameters
+    PARAMETER_FIELD_NAME,
+    PARAMETER_PREFIX,
+    PARAMETER_SUFFIX,
+    PARAMETER_TEXT_TO_REPLACE,
+    PARAMETER_REPLACEMENT_TEXT,
+
+    // Errors
+    ERROR_OBJECT_NON_NULL,
+    ERROR_STRING_NON_BLANK,
+    ERROR_STRING_NON_EMPTY,
+    ERROR_TEXT_NOT_FOUND
+}

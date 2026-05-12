@@ -5,5 +5,5 @@ import com.arayby.ybymo.core.models.DataRecord;
 @FunctionalInterface
 public interface Transformer {
 
-    DataRecord transform(DataRecord record);
+    DataRecord transform(DataRecord dataRecord);
 }

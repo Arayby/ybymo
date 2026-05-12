@@ -3,8 +3,8 @@ package com.arayby.ybymo.core.transformers;
 import com.arayby.ybymo.core.models.DataRecord;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
+import static com.arayby.ybymo.core.builders.TestDataRecordBuilder.dataRecord;
+import static com.arayby.ybymo.core.builders.TestDataRecordBuilder.entry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -12,35 +12,26 @@ class PrefixTransformerTest {
 
     @Test
     void transform_whenFieldsHaveValues_addsPrefixToEachValue() {
-        DataRecord record = DataRecord.of(List.of(
-                new DataRecord.Field("col1", "a"),
-                new DataRecord.Field("col2", "b")
-        ));
+        DataRecord dataRecord = dataRecord().field("col1", "a").field("col2", "b").build();
         PrefixTransformer transformer = new PrefixTransformer("pre-");
 
-        DataRecord result = transformer.transform(record);
+        DataRecord result = transformer.transform(dataRecord);
 
-        assertThat(result.fields()).containsExactly(
-                new DataRecord.Field("col1", "pre-a"),
-                new DataRecord.Field("col2", "pre-b")
-        );
+        assertThat(result.fields()).containsExactly(entry("col1", "pre-a"), entry("col2", "pre-b"));
     }
 
     @Test
     void transform_whenFieldValueNull_keepsNull() {
-        DataRecord record = DataRecord.of(List.of(new DataRecord.Field("col1", null)));
+        DataRecord dataRecord = dataRecord().field("col1", null).build();
         PrefixTransformer transformer = new PrefixTransformer("pre-");
 
-        DataRecord result = transformer.transform(record);
+        DataRecord result = transformer.transform(dataRecord);
 
-        assertThat(result.fields()).containsExactly(new DataRecord.Field("col1", null));
+        assertThat(result.fields()).containsExactly(entry("col1", null));
     }
 
     @Test
-    void PrefixTransformer_whenPrefixNull_throwsException() {
-        assertThatThrownBy(() -> new PrefixTransformer(null))
-                .isInstanceOf(NullPointerException.class)
-                .hasMessage("Prefixo não pode ser nulo");
+    void constructor_whenPrefixNull_throwsIllegalArgumentException() {
+        assertThatThrownBy(() -> new PrefixTransformer(null)).isInstanceOf(IllegalArgumentException.class).hasMessage("[Prefixo] não pode ser nulo");
     }
 }
-

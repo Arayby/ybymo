@@ -1,15 +1,19 @@
 package com.arayby.ybymo.core.extractors.csv;
 
+import com.arayby.ybymo.core.builders.CsvTestFileBuilder;
 import com.arayby.ybymo.core.models.DataRecord;
+import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.charset.MalformedInputException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
+import static com.arayby.ybymo.core.builders.TestDataRecordBuilder.entry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -20,28 +24,19 @@ class CsvExtractorTest {
 
     @Test
     void extract_whenCsvHasMultipleRowsAndSelectedColumns_returnsMatchingRecords() throws IOException {
-        Path file = tempDir.resolve("input.csv");
-        Files.writeString(file, """
-                                name,age,city
-                                Alice,30,London
-                                Bob,25,Paris
-                                """);
+        Path file = CsvTestFileBuilder.csvIn(tempDir).row("name", "age", "city").row("Alice", "30", "London").row("Bob", "25", "Paris").build();
 
         List<DataRecord> records = new CsvExtractor().extract(file, List.of(1, 3));
 
         assertThat(records).hasSize(3);
-        assertThat(records.get(0).fields()).containsExactly(new DataRecord.Field("col1", "name"), new DataRecord.Field("col3", "city"));
-        assertThat(records.get(1).fields()).containsExactly(new DataRecord.Field("col1", "Alice"), new DataRecord.Field("col3", "London"));
-        assertThat(records.get(2).fields()).containsExactly(new DataRecord.Field("col1", "Bob"), new DataRecord.Field("col3", "Paris"));
+        assertThat(records.get(0).fields()).containsExactly(entry("col1", "name"), entry("col3", "city"));
+        assertThat(records.get(1).fields()).containsExactly(entry("col1", "Alice"), entry("col3", "London"));
+        assertThat(records.get(2).fields()).containsExactly(entry("col1", "Bob"), entry("col3", "Paris"));
     }
 
     @Test
     void extract_whenSelectorContainsOnlyInvalidIndexes_returnsRecordsWithoutFields() throws IOException {
-        Path file = tempDir.resolve("input.csv");
-        Files.writeString(file, """
-                                a,b,c
-                                d,e,f
-                                """);
+        Path file = CsvTestFileBuilder.csvIn(tempDir).row("a", "b", "c").row("d", "e", "f").build();
 
         List<DataRecord> records = new CsvExtractor().extract(file, List.of(0, -1, 4));
 
@@ -54,19 +49,17 @@ class CsvExtractorTest {
     void extract_whenCsvContainsInvalidUtf8Bytes_throwsIOException() throws IOException {
         Path file = tempDir.resolve("invalid.csv");
         Files.write(file, new byte[]{(byte) 0xC3, (byte) 0x28});
+        ThrowingCallable thrown = () -> new CsvExtractor().extract(file, List.of(1));
 
-        assertThatThrownBy(() -> new CsvExtractor().extract(file, List.of(1))).isInstanceOf(UncheckedIOException.class).hasCauseInstanceOf(java.nio.charset.MalformedInputException.class);
+        assertThatThrownBy(thrown).isInstanceOf(UncheckedIOException.class).hasCauseInstanceOf(MalformedInputException.class);
     }
 
     @Test
-    void extract_whenSelectorsIsNull_throwsNullPointerException() throws IOException {
-        Path file = tempDir.resolve("input.csv");
-        Files.writeString(file, """
-                                a,b
-                                c,d
-                                """);
+    void extract_whenSelectorIsNull_throwsNullPointerException() throws IOException {
+        Path file = CsvTestFileBuilder.csvIn(tempDir).row("a", "b").row("c", "d").build();
+        ThrowingCallable thrown = () -> new CsvExtractor().extract(file, null);
 
-        assertThatThrownBy(() -> new CsvExtractor().extract(file, null)).isInstanceOf(NullPointerException.class);
+        assertThatThrownBy(thrown).isInstanceOf(NullPointerException.class);
     }
 
     @Test

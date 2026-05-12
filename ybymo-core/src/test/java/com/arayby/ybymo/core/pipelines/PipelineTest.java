@@ -6,37 +6,39 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static com.arayby.ybymo.core.builders.TestDataRecordBuilder.dataRecord;
+import static com.arayby.ybymo.core.builders.TestDataRecordBuilder.entry;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class PipelineTest {
 
-    private static DataRecord appendSuffix(DataRecord record, String suffix) {
-        DataRecord.Field field = record.fields().getFirst();
-        return record.withFields(List.of(field.withValue(field.value() + suffix)));
+    private static DataRecord appendSuffix(DataRecord dataRecord, String suffix) {
+        DataRecord.Field field = dataRecord.fields().getFirst();
+        return dataRecord.withFields(List.of(field.withValue(field.value() + suffix)));
     }
 
     @Test
     void execute_whenTransformersPresent_appliesInOrder() {
-        DataRecord record = DataRecord.of(List.of(new DataRecord.Field("col1", "a")));
+        DataRecord dataRecord = dataRecord().field("col1", "a").build();
         Transformer first = r -> appendSuffix(r, "-first");
         Transformer second = r -> appendSuffix(r, "-second");
         Pipeline pipeline = Pipeline.builder().add(first).add(second).build();
 
-        List<DataRecord> result = pipeline.execute(List.of(record));
+        List<DataRecord> result = pipeline.execute(List.of(dataRecord));
 
         assertThat(result).hasSize(1);
-        assertThat(result.getFirst().fields()).containsExactly(new DataRecord.Field("col1", "a-first-second"));
+        assertThat(result.getFirst().fields()).containsExactly(entry("col1", "a-first-second"));
     }
 
     @Test
     void execute_whenNoTransformers_returnsRecordsWithSameFields() {
-        DataRecord record = DataRecord.of(List.of(new DataRecord.Field("col1", "value")));
+        DataRecord dataRecord = dataRecord().field("col1", "value").build();
         Pipeline pipeline = Pipeline.builder().build();
 
-        List<DataRecord> result = pipeline.execute(List.of(record));
+        List<DataRecord> result = pipeline.execute(List.of(dataRecord));
 
         assertThat(result).hasSize(1);
-        assertThat(result.getFirst().fields()).containsExactly(new DataRecord.Field("col1", "value"));
+        assertThat(result.getFirst().fields()).containsExactly(entry("col1", "value"));
     }
 
     @Test

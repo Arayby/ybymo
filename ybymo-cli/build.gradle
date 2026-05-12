@@ -1,20 +1,32 @@
 plugins {
-    id 'org.graalvm.buildtools.native'
+    id 'application'
+    alias libs.plugins.graalvmNative
+}
+
+version = '1.1.3'
+
+application {
+    mainClass = 'com.arayby.ybymo.cli.Main'
 }
 
 dependencies {
+    annotationProcessor libs.picocli.codegen
+
     implementation project(':ybymo-core')
 
-    annotationProcessor 'info.picocli:picocli-codegen:4.7.6'
+    implementation libs.bundles.common
+    implementation libs.picocli.core
+    implementation libs.commons.csv
 
-    implementation 'info.picocli:picocli:4.7.6'
-    implementation 'org.apache.commons:commons-csv:1.11.0'
+    runtimeOnly libs.bundles.logging.runtime
 
+    testImplementation libs.bundles.testing
 }
 
 jar {
     manifest {
-        attributes 'Main-Class': 'com.arayby.ybymo.cli.Main'
+        attributes('Main-Class': application.mainClass,
+                'Implementation-Version': project.version)
     }
 }
 
@@ -26,7 +38,8 @@ tasks.register('fatJar', Jar) {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
     manifest {
-        attributes 'Main-Class': 'com.arayby.ybymo.cli.Main'
+        attributes('Main-Class': application.mainClass,
+                'Implementation-Version': project.version)
     }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
@@ -34,7 +47,7 @@ tasks.register('fatJar', Jar) {
 graalvmNative {
     binaries {
         main {
-            mainClass = 'com.arayby.ybymo.cli.Main'
+            mainClass = application.mainClass
             imageName = 'ybymo'
         }
     }

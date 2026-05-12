@@ -1,5 +1,8 @@
 package com.arayby.ybymo.core.models;
 
+import com.arayby.ybymo.core.messages.KeyMessage;
+import com.arayby.ybymo.core.validators.ArgumentValidator;
+
 import java.util.List;
 
 public final class DataRecord {
@@ -24,16 +27,14 @@ public final class DataRecord {
 
     @Override
     public String toString() {
-        return "DataRecord" + fields;
+        return "DataRecord{fields=" + fields + "}";
     }
 
     public record Field(String name,
                         String value) {
 
         public Field {
-            if (name == null || name.isBlank()) {
-                throw new IllegalArgumentException("Nome do campo não pode ser vazio");
-            }
+            name = ArgumentValidator.requireNonBlank(name, KeyMessage.PARAMETER_FIELD_NAME);
         }
 
         public Field withValue(String newValue) {

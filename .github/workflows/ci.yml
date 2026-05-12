@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, development ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, development ]
+    branches: [ main ]
 
 permissions:
   contents: read
@@ -13,24 +13,23 @@ jobs:
   test:
     name: Test Suite
     runs-on: ubuntu-latest
-    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
     permissions:
       checks: write
       contents: read
 
     steps:
       - name: Repository Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
 
       - name: GraalVM Setup
-        uses: graalvm/setup-graalvm@v1
+        uses: graalvm/setup-graalvm@bef4b0e916c7dd079bf60fb95d49139f67e32c5f
         with:
           java-version: '25'
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Gradle Cache
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: |
             ~/.gradle/caches
@@ -44,14 +43,12 @@ jobs:
       - name: Validate CHANGELOG
         run: ./gradlew validateChangelog
 
-      - name: Validate Version
-        run: ./gradlew validateVersionSync
 
       - name: Run Tests
         run: ./gradlew test
 
       - name: Test Reporter
-        uses: dorny/test-reporter@v1
+        uses: dorny/test-reporter@3eeb9fc888e82e8be2fb356bbeec2750231672bc
         if: always()
         with:
           name: JUnit Results
@@ -62,7 +59,6 @@ jobs:
     name: Build Artifacts ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     needs: test
-    environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
     strategy:
       fail-fast: false
       matrix:
@@ -84,17 +80,17 @@ jobs:
 
     steps:
       - name: Repository Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
 
       - name: GraalVM Setup
-        uses: graalvm/setup-graalvm@v1
+        uses: graalvm/setup-graalvm@bef4b0e916c7dd079bf60fb95d49139f67e32c5f
         with:
           java-version: '25'
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Gradle Cache
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: |
             ~/.gradle/caches
@@ -115,7 +111,7 @@ jobs:
           cp ${{ matrix.binary }} ${{ matrix.bin_name }}
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: ${{ matrix.artifact }}
           path: ${{ matrix.bin_name }}

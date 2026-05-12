@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
+import static com.arayby.ybymo.cli.builders.CsvTestFileBuilder.csvIn;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class CsvCommandTest {
@@ -42,11 +43,7 @@ class CsvCommandTest {
 
     @Test
     void run_whenValidCsvWithHeaderAndTransforms_writesTransformedFile() throws IOException {
-        Path input = tempDir.resolve("input.csv");
-        Files.writeString(input, """
-                                 name,email
-                                 Alice, @2.345-2
-                                 """);
+        Path input = csvIn(tempDir).row("name", "email").row("Alice", " @2.345-2").build();
 
         int exitCode = new CommandLine(new CsvCommand()).execute(input.toString(), "2", "-c", "-p", "@", "-s", ".com");
         Path output = tempDir.resolve("input_ybymo.csv");
@@ -59,11 +56,7 @@ class CsvCommandTest {
 
     @Test
     void run_whenSkipHeaderTrue_doesNotWriteHeader() throws IOException {
-        Path input = tempDir.resolve("input.csv");
-        Files.writeString(input, """
-                                 name,city
-                                 Alice,London
-                                 """);
+        Path input = csvIn(tempDir).row("name", "city").row("Alice", "London").build();
 
         new CommandLine(new CsvCommand()).execute(input.toString(), "1", "-H");
         Path output = tempDir.resolve("input_ybymo.csv");
@@ -75,10 +68,7 @@ class CsvCommandTest {
     @Test
     void run_whenInputHasNoExtension_writesOutputWithSuffixOnly() throws IOException {
         Path input = tempDir.resolve("input");
-        Files.writeString(input, """
-                                 value
-                                 Alice
-                                 """);
+        Files.writeString(input, "value\nAlice\n");
 
         new CommandLine(new CsvCommand()).execute(input.toString(), "1", "-H");
         Path output = tempDir.resolve("input_ybymo");
@@ -88,8 +78,7 @@ class CsvCommandTest {
 
     @Test
     void run_whenCsvEmpty_printsNoRecordsMessageAndDoesNotWriteOutput() throws IOException {
-        Path input = tempDir.resolve("input.csv");
-        Files.writeString(input, "");
+        Path input = csvIn(tempDir).build();
 
         new CommandLine(new CsvCommand()).execute(input.toString(), "1");
         Path output = tempDir.resolve("input_ybymo.csv");
@@ -111,12 +100,7 @@ class CsvCommandTest {
 
     @Test
     void run_whenOutputPathIsDirectory_printsWriteError() throws IOException {
-        Path input = tempDir.resolve("input.csv");
-        Files.writeString(input, """
-                                 name
-                                 Alice
-                                 """);
-
+        Path input = csvIn(tempDir).row("name").row("Alice").build();
         Path outputDir = tempDir.resolve("input_ybymo.csv");
         Files.createDirectory(outputDir);
         new CommandLine(new CsvCommand()).execute(input.toString(), "1", "-H");
@@ -126,9 +110,7 @@ class CsvCommandTest {
 
     @Test
     void run_whenOnlyHeaderRecord_writesHeaderOnly() throws IOException {
-        Path input = tempDir.resolve("input.csv");
-        Files.writeString(input, "name,email\n");
-
+        Path input = csvIn(tempDir).row("name", "email").build();
         new CommandLine(new CsvCommand()).execute(input.toString(), "2");
         Path output = tempDir.resolve("input_ybymo.csv");
         List<String> lines = Files.readAllLines(output);
