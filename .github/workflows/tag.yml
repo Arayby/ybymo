@@ -52,7 +52,7 @@ jobs:
         run: |
           cd ybymo-core
           ../gradlew -q extractVersion
-          VERSION=$(cat build/version.txt)
+          VERSION=$(cat ../build/version.txt)
           if [ -z "$VERSION" ]; then
             echo "❌ Falha ao extrair versão de release do ybymo-core/CHANGELOG.md"
             exit 1
@@ -124,7 +124,7 @@ jobs:
         run: |
           cd ybymo-cli
           ../gradlew -q extractVersion
-          VERSION=$(cat build/version.txt)
+          VERSION=$(cat ../build/version.txt)
           if [ -z "$VERSION" ]; then
             echo "❌ Falha ao extrair versão de release do ybymo-cli/CHANGELOG.md"
             exit 1
