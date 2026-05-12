@@ -87,16 +87,13 @@ jobs:
         run: ./gradlew :ybymo-core:build -x test
 
       - name: Extract Core Release Notes
-        run: |
-          cd ybymo-core
-          ../gradlew -q extractReleaseNotes
-          cp ../build/release-notes.txt release-notes.txt
+        run: ./gradlew -q :ybymo-core:extractReleaseNotes
 
       - name: Release Core Artifacts
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65
         with:
           files: ybymo-core/build/libs/ybymo-core-*.jar
-          body_path: ybymo-core/release-notes.txt
+          body_path: ybymo-core/build/release-notes.txt
           generate_release_notes: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -166,17 +163,14 @@ jobs:
 
       - name: Extract CLI Release Notes
         if: matrix.os == 'ubuntu-latest'
-        run: |
-          cd ybymo-cli
-          ../gradlew -q extractReleaseNotes
-          cp ../build/release-notes.txt release-notes.txt
+        run: ./gradlew -q :ybymo-cli:extractReleaseNotes
 
       - name: Release CLI Artifact
         if: matrix.os == 'ubuntu-latest'
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65
         with:
           files: ${{ matrix.artifact }}
-          body_path: ybymo-cli/release-notes.txt
+          body_path: ybymo-cli/build/release-notes.txt
           generate_release_notes: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
