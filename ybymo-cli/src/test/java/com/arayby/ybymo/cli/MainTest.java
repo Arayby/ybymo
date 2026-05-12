@@ -7,7 +7,7 @@ import java.io.PrintStream;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-public class MainTest {
+class MainTest {
 
     @Test
     void run_whenNoArgs_printsUsage() {

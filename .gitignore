@@ -41,16 +41,12 @@ replay_pid*
 # GRADLE
 ############################
 .gradle/
-build/
+/build/
+/buildSrc/build/
+/ybymo-core/build/
+/ybymo-cli/build/
 !gradle/wrapper/gradle-wrapper.jar
 !gradle/wrapper/gradle-wrapper.properties
-
-############################
-# MULTI-MÓDULO (core/cli/api)
-############################
-core/build/
-cli/build/
-api/build/
 
 ############################
 # FRONTEND (NODE / TS)
